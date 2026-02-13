@@ -1,0 +1,86 @@
+.header {
+  background: #d5b586;
+  color: #2b2b2b;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.footer {
+  background: #d5b586;
+  color: #2b2b2b;
+  margin-top: 2rem;
+  padding: 4rem;
+}
+
+/**
+#d2c6b8
+*/
+.nav a {
+  color: #2b2b2b;
+}
+
+.nav a:hover {
+  color: #243e55;
+}
+
+.nav-item {
+  margin: 0.85rem;
+  font-size: 1.1rem;
+}
+
+.signout button {
+  color: red;
+}
+
+.signout button:hover {
+  color: #243e55;
+  text-decoration: underline;
+}
+
+.order-select {
+  font-size: 1rem;
+}
+
+.order-select select {
+  font-size: 1rem;
+}
+
+.form-card {
+  background: #efe7dc;
+}
+
+.btn-primary {
+  background-color: #2f4a3d !important;
+  border-color: #2f4a3d !important;
+
+  font-weight: 500;
+  border-radius: 0.75rem;
+
+  padding: 0.55rem 1.25rem;
+}
+
+.btn-primary:hover {
+  background-color: #24382e !important;
+  border-color: #24382e !important;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #e9e2d6;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-main {
+  flex: 1;
+}
