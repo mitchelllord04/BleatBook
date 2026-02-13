@@ -11,41 +11,50 @@ function NavBar() {
   }
 
   return (
-    <ul className="nav nav-underline">
-      <li className="nav-item">
-        <NavLink to="/home" className="nav-link">
-          Home
-        </NavLink>
-      </li>
+    <nav className="navbar navbar-expand-lg p-0">
+      <button
+        className="navbar-toggler border-0 ms-auto"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navMenu"
+      >
+        <span className="navbar-toggler-icon"></span>
+      </button>
 
-      <li className="nav-item">
-        <NavLink to="/add" className="nav-link">
-          Add
-        </NavLink>
-      </li>
+      <div className="collapse navbar-collapse" id="navMenu">
+        <ul className="nav nav-underline ms-auto">
+          <li className="nav-item">
+            <NavLink to="/home" className="nav-link">
+              Home
+            </NavLink>
+          </li>
 
-      <li className="nav-item">
-        <NavLink to="/view" className="nav-link">
-          View
-        </NavLink>
-      </li>
+          <li className="nav-item">
+            <NavLink to="/add" className="nav-link">
+              Add
+            </NavLink>
+          </li>
 
-      <li className="nav-item">
-        <NavLink to="/analytics" className="nav-link">
-          Analytics
-        </NavLink>
-      </li>
+          <li className="nav-item">
+            <NavLink to="/view" className="nav-link">
+              View
+            </NavLink>
+          </li>
 
-      <li className="nav-item signout">
-        <button
-          className="nav-link "
-          style={{ textDecoration: "none" }}
-          onClick={handleLogout}
-        >
-          Sign Out
-        </button>
-      </li>
-    </ul>
+          <li className="nav-item">
+            <NavLink to="/analytics" className="nav-link">
+              Analytics
+            </NavLink>
+          </li>
+
+          <li className="signout nav-item">
+            <button className="nav-link" onClick={handleLogout}>
+              Sign Out
+            </button>
+          </li>
+        </ul>
+      </div>
+    </nav>
   );
 }
 

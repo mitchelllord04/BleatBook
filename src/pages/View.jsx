@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import { useAuth } from "../context/useAuth";
 import { getAnimals } from "../services/animals";
-
 import { useNavigate } from "react-router-dom";
 
 function View() {
@@ -25,20 +24,15 @@ function View() {
       setPageLoading(true);
 
       const start = Date.now();
-
       const data = await getAnimals(user.uid);
       setAnimals(data);
 
       const elapsed = Date.now() - start;
-      const minDelay = 800; // ms
-
+      const minDelay = 800;
       const remaining = minDelay - elapsed;
 
-      if (remaining > 0) {
-        setTimeout(() => setPageLoading(false), remaining);
-      } else {
-        setPageLoading(false);
-      }
+      if (remaining > 0) setTimeout(() => setPageLoading(false), remaining);
+      else setPageLoading(false);
     }
 
     load();
@@ -48,7 +42,6 @@ function View() {
     return (
       <>
         <Header />
-
         <div className="d-flex justify-content-center align-items-center vh-100">
           <div className="text-center">
             <div className="spinner-border" role="status" />
@@ -109,12 +102,12 @@ function View() {
       <div className="container py-4">
         <h1 className="mb-5">My Animals</h1>
 
-        <div className="order-select d-flex  mb-4">
-          <div className="d-flex flex-wrap gap-4 align-items-center">
-            <div className="d-flex align-items-center gap-2">
+        <div className="d-flex flex-column flex-lg-row gap-3 mb-4 align-items-stretch">
+          <div className="d-flex flex-column flex-md-row flex-wrap gap-3 align-items-stretch align-items-md-center">
+            <div className="d-flex flex-column flex-sm-row align-items-sm-center gap-2">
               <label className="m-0 fw-semibold">Sort by:</label>
               <select
-                className="form-select w-auto"
+                className="form-select w-100 w-sm-auto"
                 value={sort}
                 onChange={sortSelect}
               >
@@ -126,10 +119,10 @@ function View() {
               </select>
             </div>
 
-            <div className="d-flex align-items-center gap-2">
+            <div className="d-flex flex-column flex-sm-row align-items-sm-center gap-2">
               <label className="m-0 fw-semibold">Direction:</label>
               <select
-                className="form-select w-auto"
+                className="form-select w-100 w-sm-auto"
                 value={order}
                 onChange={orderSelect}
               >
@@ -138,10 +131,10 @@ function View() {
               </select>
             </div>
 
-            <div className="d-flex align-items-center gap-2">
+            <div className="d-flex flex-column flex-sm-row align-items-sm-center gap-2">
               <label className="m-0 fw-semibold">Species:</label>
               <select
-                className="form-select w-auto"
+                className="form-select w-100 w-sm-auto"
                 value={species}
                 onChange={speciesSelect}
               >
@@ -154,10 +147,10 @@ function View() {
               </select>
             </div>
 
-            <div className="d-flex align-items-center gap-2">
+            <div className="d-flex flex-column flex-sm-row align-items-sm-center gap-2">
               <label className="m-0 fw-semibold">Sex:</label>
               <select
-                className="form-select w-auto"
+                className="form-select w-100 w-sm-auto"
                 value={sex}
                 onChange={sexSelect}
               >
@@ -168,10 +161,13 @@ function View() {
             </div>
           </div>
 
-          <div className="ms-auto" style={{ flex: "1", maxWidth: "18rem" }}>
-            <div className="input-group">
+          <div
+            className="w-100 w-lg-auto ms-lg-auto"
+            style={{ maxWidth: "22rem" }}
+          >
+            <div className="input-group mt-3 mt-lg-0">
               <input
-                className="form-control"
+                className="form-control "
                 type="search"
                 placeholder="Search by name or ID..."
                 value={query}
@@ -181,13 +177,12 @@ function View() {
                   if (v.trim() === "") setSearch("");
                 }}
               />
-
               <button
                 className="btn btn-outline-secondary"
                 type="button"
                 onClick={handleSearch}
               >
-                <i className="bi bi-search"></i>
+                <i className="bi bi-search" />
               </button>
             </div>
           </div>
@@ -201,25 +196,25 @@ function View() {
           <table className="table table-striped table-hover">
             <thead>
               <tr>
-                <th> ID </th>
+                <th>ID</th>
                 <th>Name</th>
-                <th> Sex </th>
+                <th>Sex</th>
                 <th>Species</th>
                 <th>Weight</th>
                 <th>DOB</th>
-                <th> DOP </th>
+                <th>DOP</th>
               </tr>
             </thead>
             <tbody>
               {shownAnimals.map((a) => (
                 <tr key={a.id} onClick={() => navigate(`/animals/${a.id}`)}>
-                  <td> {a.tagId} </td>
+                  <td>{a.tagId}</td>
                   <td>{a.name}</td>
-                  <td> {a.sex} </td>
+                  <td>{a.sex}</td>
                   <td>{a.species}</td>
                   <td>{a.weight}lbs</td>
                   <td>{a.dob}</td>
-                  <td> {a.dop} </td>
+                  <td>{a.dop}</td>
                 </tr>
               ))}
             </tbody>
