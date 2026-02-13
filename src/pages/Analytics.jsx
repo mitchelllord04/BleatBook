@@ -431,9 +431,7 @@ function Analytics() {
           <div className="col-md-6 col-lg-3">
             <div className="card shadow-sm border-0 h-100">
               <div className="card-body">
-                <div className="text-body-secondary fw-semibold">
-                  Average Age
-                </div>
+                <div className="text-body-secondary fw-semibold">Avg. Age</div>
                 <div className="fs-2 fw-bold">
                   {computed.avgAgeYears == null
                     ? "—"
