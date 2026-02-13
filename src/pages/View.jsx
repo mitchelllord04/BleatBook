@@ -189,9 +189,18 @@ function View() {
         </div>
 
         {animals.length === 0 ? (
-          <p>No animals yet. Add one!</p>
+          <div className="d-flex justify-content-center align-items-center text-center py-5">
+            <div>
+              <h4 className="mb-2">No animals yet</h4>
+              <p className="text-body-secondary m-0">Add one to get started!</p>
+            </div>
+          </div>
         ) : shownAnimals.length === 0 ? (
-          <p>No animals match your current filters/search.</p>
+          <div className="d-flex justify-content-center align-items-center text-center py-5">
+            <p className="text-body-secondary m-0">
+              No animals match your current filters/search.
+            </p>
+          </div>
         ) : (
           <table className="table table-striped table-hover">
             <thead>

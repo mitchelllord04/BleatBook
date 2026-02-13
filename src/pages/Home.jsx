@@ -4,6 +4,42 @@ import { useEffect, useMemo, useState } from "react";
 import { getAnimals } from "../services/animals";
 import { useNavigate } from "react-router-dom";
 
+function latestDateFromHistory(hist) {
+  if (!Array.isArray(hist)) return null;
+  let best = null;
+  for (const p of hist) {
+    const d = p?.date ? String(p.date) : null;
+    if (d && (!best || d > best)) best = d;
+  }
+  return best;
+}
+
+function latestWeightFromHistory(hist) {
+  if (!Array.isArray(hist)) return null;
+
+  let best = null;
+
+  for (const p of hist) {
+    const d = p?.date ? String(p.date) : null;
+    const v = Number(p?.value);
+
+    if (!d || !Number.isFinite(v)) continue;
+
+    if (!best || d > best.date) {
+      best = { date: d, value: v };
+    }
+  }
+
+  return best;
+}
+
+const daysBetween = (a, b) => {
+  if (!a || !b) return null;
+  const da = new Date(`${a}T00:00:00`);
+  const db = new Date(`${b}T00:00:00`);
+  return Math.round((db - da) / (1000 * 60 * 60 * 24));
+};
+
 function Home() {
   const { user, loading } = useAuth();
   const [animals, setAnimals] = useState([]);
@@ -37,106 +73,92 @@ function Home() {
   const todayStr = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const todayPretty = useMemo(() => new Date().toLocaleDateString(), []);
 
-  const daysBetween = (a, b) => {
-    if (!a || !b) return null;
-    const da = new Date(`${a}T00:00:00`);
-    const db = new Date(`${b}T00:00:00`);
-    return Math.round((db - da) / (1000 * 60 * 60 * 24));
-  };
-
-  const lastTreatmentFromAnimal = (a) => {
-    const hist = Array.isArray(a.treatmentDateHistory)
-      ? a.treatmentDateHistory
-      : [];
-    const valid = hist
-      .filter((p) => p && p.date)
-      .slice()
-      .sort((x, y) => String(x.date).localeCompare(String(y.date)));
-    if (valid.length) return String(valid[valid.length - 1].date);
-    if (a.treatmentDate) return String(a.treatmentDate);
-    return null;
-  };
-
-  const lastWeightFromAnimal = (a) => {
-    const hist = Array.isArray(a.weightHistory) ? a.weightHistory : [];
-    const valid = hist
-      .filter((p) => p && p.date && Number.isFinite(Number(p.value)))
-      .slice()
-      .sort((x, y) => String(x.date).localeCompare(String(y.date)));
-    if (valid.length) return { date: String(valid[valid.length - 1].date) };
-    return null;
-  };
-
   const computed = useMemo(() => {
     const total = animals.length;
 
     const dueSoonDays = 14;
-    const dueSoon = animals
-      .map((a) => ({
-        id: a.id,
-        name: a.name,
-        tagId: a.tagId,
-        dueDate: a.dueDate ? String(a.dueDate) : "",
-      }))
-      .filter((a) => a.dueDate && a.dueDate >= todayStr)
-      .filter((a) => {
-        const d = daysBetween(todayStr, a.dueDate);
-        return d != null && d <= dueSoonDays;
-      })
-      .sort((a, b) => String(a.dueDate).localeCompare(String(b.dueDate)))
-      .slice(0, 6);
+    const dueSoon = [];
 
     let mostRecentTreatment = null;
     let mostRecentTreatmentAnimal = null;
 
-    for (const a of animals) {
-      const d = lastTreatmentFromAnimal(a);
-      if (!d) continue;
-      if (!mostRecentTreatment || d > mostRecentTreatment) {
-        mostRecentTreatment = d;
-        mostRecentTreatmentAnimal = a;
-      }
-    }
+    let mostRecentWeight = null;
+    let mostRecentWeightAnimal = null;
 
     const activity = [];
+
     for (const a of animals) {
-      const weightHist = Array.isArray(a.weightHistory) ? a.weightHistory : [];
-      if (weightHist.length >= 2) {
-        const lw = lastWeightFromAnimal(a);
-        if (lw?.date)
-          activity.push({
-            kind: "Weighed",
-            date: lw.date,
-            id: a.id,
-            name: a.name,
-            tagId: a.tagId,
-          });
+      // due soon (build then sort once at end)
+      const dueDate = a.dueDate ? String(a.dueDate) : "";
+      if (dueDate && dueDate >= todayStr) {
+        const d = daysBetween(todayStr, dueDate);
+        if (d != null && d <= dueSoonDays) {
+          dueSoon.push({ id: a.id, name: a.name, tagId: a.tagId, dueDate });
+        }
       }
 
-      const treatHist = Array.isArray(a.treatmentDateHistory)
-        ? a.treatmentDateHistory
-        : [];
+      // latest treatment (no sorting)
+      const treatDate =
+        latestDateFromHistory(a.treatmentDateHistory) ||
+        (a.treatmentDate ? String(a.treatmentDate) : null);
 
-      if (treatHist.length >= 1) {
-        const lt = lastTreatmentFromAnimal(a);
-        if (lt)
-          activity.push({
-            kind: "Treated",
-            date: lt,
-            id: a.id,
-            name: a.name,
-            tagId: a.tagId,
-          });
+      if (
+        treatDate &&
+        (!mostRecentTreatment || treatDate > mostRecentTreatment)
+      ) {
+        mostRecentTreatment = treatDate;
+        mostRecentTreatmentAnimal = a;
+      }
+
+      const latestWeight = latestWeightFromHistory(a.weightHistory);
+
+      if (
+        latestWeight &&
+        (!mostRecentWeight || latestWeight.date > mostRecentWeight.date)
+      ) {
+        mostRecentWeight = latestWeight; // store full object
+        mostRecentWeightAnimal = a;
+      }
+
+      if (latestWeight && a.weightHistory.length >= 2) {
+        activity.push({
+          kind: "Weighed",
+          date: latestWeight.date,
+          id: a.id,
+          name: a.name,
+          tagId: a.tagId,
+        });
+      }
+
+      if (treatDate) {
+        activity.push({
+          kind: "Treated",
+          date: treatDate,
+          id: a.id,
+          name: a.name,
+          tagId: a.tagId,
+        });
       }
     }
+
+    dueSoon.sort((x, y) => String(x.dueDate).localeCompare(String(y.dueDate)));
+    const dueSoonTop = dueSoon.slice(0, 6);
 
     activity.sort((x, y) => String(y.date).localeCompare(String(x.date)));
 
+    const activity30Days = activity.filter((x) => {
+      const diff = daysBetween(x.date, todayStr);
+      return diff != null && diff >= 0 && diff <= 30;
+    }).length;
+
     return {
       total,
-      dueSoon,
+      dueSoon: dueSoonTop,
       mostRecentTreatment,
       mostRecentTreatmentAnimal,
+      mostRecentWeight,
+      mostRecentWeightAnimal,
+      activity30Days,
       activity: activity.slice(0, 6),
     };
   }, [animals, todayStr]);
@@ -192,6 +214,25 @@ function Home() {
           </div>
         </div>
 
+        {computed.total === 0 && (
+          <div className="card border-0 shadow-sm mb-4">
+            <div className="card-body text-center py-5">
+              <h3 className="fw-bold mb-2">No animals yet</h3>
+              <p className="text-body-secondary mb-4">
+                Start tracking weights, treatments, due dates, and more by
+                adding your first animal.
+              </p>
+
+              <button
+                className="btn btn-primary px-4"
+                onClick={() => navigate("/add")}
+              >
+                Add Your First Animal
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="row g-3 mb-4">
           <div className="col-md-4">
             <div className="card shadow-sm border-0 h-100">
@@ -207,9 +248,23 @@ function Home() {
           <div className="col-md-4">
             <div className="card shadow-sm border-0 h-100">
               <div className="card-body">
-                <div className="text-body-secondary fw-semibold">Due Soon</div>
-                <div className="fs-2 fw-bold">{computed.dueSoon.length}</div>
-                <div className="text-body-secondary mt-1">Next 14 days</div>
+                <div className="text-body-secondary fw-semibold">
+                  Latest Weigh-In
+                </div>
+
+                <div className="fs-5 fw-semibold">
+                  {computed.mostRecentWeight
+                    ? `${computed.mostRecentWeight.date}`
+                    : "—"}
+                </div>
+
+                <div className="text-body-secondary mt-1">
+                  {computed.mostRecentWeightAnimal
+                    ? `${computed.mostRecentWeightAnimal.name || "—"} • Tag ${
+                        computed.mostRecentWeightAnimal.tagId || "—"
+                      } • ${computed.mostRecentWeight.value} lbs`
+                    : "No weight history yet."}
+                </div>
               </div>
             </div>
           </div>
@@ -225,7 +280,7 @@ function Home() {
                 </div>
                 <div className="text-body-secondary mt-1">
                   {computed.mostRecentTreatmentAnimal
-                    ? `${computed.mostRecentTreatmentAnimal.name || "—"} · Tag ${
+                    ? `${computed.mostRecentTreatmentAnimal.name || "—"} • Tag ${
                         computed.mostRecentTreatmentAnimal.tagId || "—"
                       }`
                     : "No treatment history yet."}

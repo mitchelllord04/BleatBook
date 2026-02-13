@@ -52,6 +52,23 @@ function normalizeWeightHistory(a) {
     .map((p) => ({ date: String(p.date), value: Number(p.value) }));
 }
 
+function lastTrimDate(a) {
+  const d = a?.lastTrim;
+  return d ? String(d) : null;
+}
+
+function ageYears(dobStr, todayStr) {
+  if (!dobStr || !todayStr) return null;
+  const dob = new Date(`${dobStr}T00:00:00`);
+  const today = new Date(`${todayStr}T00:00:00`);
+  if (Number.isNaN(dob.getTime()) || Number.isNaN(today.getTime())) return null;
+
+  let years = today.getFullYear() - dob.getFullYear();
+  const m = today.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) years--;
+  return years >= 0 ? years : null;
+}
+
 function lastWeight(a) {
   const h = normalizeWeightHistory(a);
   if (h.length) return h[h.length - 1];
@@ -118,14 +135,43 @@ function computeAnalytics(animals, todayStr) {
 
   let mostRecentTreatment = null;
   let mostRecentTreatmentAnimal = null;
+  let mostRecentWeighIn = null;
+  let mostRecentWeighInAnimal = null;
+
+  let mostRecentTrim = null;
+  let mostRecentTrimAnimal = null;
+
+  const ages = [];
 
   for (const a of animals) {
     const d = lastTreatmentDate(a);
-    if (!d) continue;
-    if (!mostRecentTreatment || d > mostRecentTreatment) {
+    if (d && (!mostRecentTreatment || d > mostRecentTreatment)) {
       mostRecentTreatment = d;
       mostRecentTreatmentAnimal = a;
     }
+
+    const lwFull = lastWeight(a);
+    if (
+      lwFull?.date &&
+      (!mostRecentWeighIn || lwFull.date > mostRecentWeighIn)
+    ) {
+      mostRecentWeighIn = lwFull.date;
+      mostRecentWeighInAnimal = {
+        id: a.id,
+        name: a.name,
+        tagId: a.tagId,
+        value: lwFull.value,
+      };
+    }
+
+    const lt = lastTrimDate(a);
+    if (lt && (!mostRecentTrim || lt > mostRecentTrim)) {
+      mostRecentTrim = lt;
+      mostRecentTrimAnimal = { id: a.id, name: a.name, tagId: a.tagId };
+    }
+
+    const ay = ageYears(a?.dob, todayStr);
+    if (ay != null) ages.push(ay);
   }
 
   const latestWeights = [];
@@ -182,12 +228,20 @@ function computeAnalytics(animals, todayStr) {
       ? weightTrendDates[weightTrendDates.length - 1]
       : null;
 
+  const avgAgeYears =
+    ages.length > 0 ? ages.reduce((s, v) => s + v, 0) / ages.length : null;
+
   return {
     totalAnimals,
     speciesCounts,
     males,
     females,
     dueSoon,
+    mostRecentWeighIn,
+    mostRecentWeighInAnimal,
+    mostRecentTrim,
+    mostRecentTrimAnimal,
+    avgAgeYears,
     mostRecentTreatment,
     mostRecentTreatmentAnimal,
     avgLatestWeight,
@@ -302,7 +356,7 @@ function Analytics() {
   };
 
   const mostRecentTreatmentText = computed.mostRecentTreatment
-    ? `${computed.mostRecentTreatment} (${daysBetween(computed.mostRecentTreatment, todayStr)} days ago)`
+    ? `${computed.mostRecentTreatment}`
     : "—";
 
   return (
@@ -317,6 +371,7 @@ function Analytics() {
           </p>
         </div>
 
+        {/* Row 1: Total, Males, Females, Avg Weight */}
         <div className="row g-3 mb-4">
           <div className="col-md-3">
             <div className="card shadow-sm border-0 h-100">
@@ -371,6 +426,90 @@ function Analytics() {
           </div>
         </div>
 
+        {/* Row 3: Avg Age, Most Recent Weigh-In, Most Recent Treatment, Most Recent Trim */}
+        <div className="row g-3 mb-4">
+          <div className="col-md-6 col-lg-3">
+            <div className="card shadow-sm border-0 h-100">
+              <div className="card-body">
+                <div className="text-body-secondary fw-semibold">
+                  Average Age
+                </div>
+                <div className="fs-2 fw-bold">
+                  {computed.avgAgeYears == null
+                    ? "—"
+                    : computed.avgAgeYears.toFixed(1)}
+                </div>
+                <div className="text-body-secondary mt-1">years</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-6 col-lg-3">
+            <div className="card shadow-sm border-0 h-100">
+              <div className="card-body">
+                <div className="text-body-secondary fw-semibold">
+                  Most Recent Weigh-In
+                </div>
+                <div className="fs-5 fw-semibold">
+                  {computed.mostRecentWeighIn || "—"}
+                </div>
+                <div className="text-body-secondary mt-1">
+                  {computed.mostRecentWeighInAnimal
+                    ? `${computed.mostRecentWeighInAnimal.name || "—"} · Tag ${
+                        computed.mostRecentWeighInAnimal.tagId || "—"
+                      }${
+                        Number.isFinite(computed.mostRecentWeighInAnimal.value)
+                          ? ` · ${computed.mostRecentWeighInAnimal.value} lbs`
+                          : ""
+                      }`
+                    : "No weigh-ins recorded yet."}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-6 col-lg-3">
+            <div className="card shadow-sm border-0 h-100">
+              <div className="card-body">
+                <div className="text-body-secondary fw-semibold">
+                  Most Recent Treatment
+                </div>
+                <div className="fs-5 fw-semibold">
+                  {mostRecentTreatmentText}
+                </div>
+                <div className="text-body-secondary mt-2">
+                  {computed.mostRecentTreatmentAnimal
+                    ? `${computed.mostRecentTreatmentAnimal.name || "—"} · Tag ${
+                        computed.mostRecentTreatmentAnimal.tagId || "—"
+                      }`
+                    : "No treatment dates recorded yet."}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-6 col-lg-3">
+            <div className="card shadow-sm border-0 h-100">
+              <div className="card-body">
+                <div className="text-body-secondary fw-semibold">
+                  Most Recent Trim
+                </div>
+                <div className="fs-5 fw-semibold">
+                  {computed.mostRecentTrim || "—"}
+                </div>
+                <div className="text-body-secondary mt-1">
+                  {computed.mostRecentTrimAnimal
+                    ? `${computed.mostRecentTrimAnimal.name || "—"} · Tag ${
+                        computed.mostRecentTrimAnimal.tagId || "—"
+                      }`
+                    : "No trims recorded yet."}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Row 2: Species Breakdown + Weight Trend */}
         <div className="row g-3 mb-4">
           <div className="col-lg-5">
             <div className="card shadow-sm border-0 h-100">
@@ -399,7 +538,9 @@ function Analytics() {
                     <div className="text-body-secondary">
                       Average weight across all recorded weigh-ins
                       {computed.lastTrendDate && computed.lastTrend != null
-                        ? ` • Latest: ${computed.lastTrend.toFixed(1)} lbs on ${computed.lastTrendDate}`
+                        ? ` • Latest: ${computed.lastTrend.toFixed(
+                            1,
+                          )} lbs on ${computed.lastTrendDate}`
                         : ""}
                     </div>
                   </div>
@@ -420,12 +561,12 @@ function Analytics() {
         </div>
 
         <div className="row g-3">
-          <div className="col-lg-7">
+          <div className="col-12">
             <div className="card shadow-sm border-0">
               <div className="card-body p-4">
                 <div className="d-flex justify-content-between align-items-start mb-3">
                   <div>
-                    <h5 className="mb-1 fw-semibold">Due Soon</h5>
+                    <h5 className="mb-1 fw-semibold">Upcoming Due Dates</h5>
                     <div className="text-body-secondary">
                       Animals with a due date within the next 14 days
                     </div>
@@ -469,32 +610,6 @@ function Analytics() {
                     </table>
                   </div>
                 )}
-              </div>
-            </div>
-          </div>
-
-          <div className="col-lg-5">
-            <div className="card shadow-sm border-0 h-100">
-              <div className="card-body p-4">
-                <h5 className="mb-1 fw-semibold">Most Recent Treatment</h5>
-                <div className="text-body-secondary mb-3">
-                  Latest recorded treatment across all animals
-                </div>
-
-                <div className="fs-5 fw-semibold">
-                  {mostRecentTreatmentText}
-                </div>
-
-                <div className="text-body-secondary mt-2">
-                  {computed.mostRecentTreatmentAnimal ? (
-                    <>
-                      {computed.mostRecentTreatmentAnimal.name || "—"} · Tag{" "}
-                      {computed.mostRecentTreatmentAnimal.tagId || "—"}
-                    </>
-                  ) : (
-                    "No treatment dates recorded yet."
-                  )}
-                </div>
               </div>
             </div>
           </div>
