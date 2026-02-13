@@ -14,12 +14,14 @@ import UpdateWeight from "./pages/UpdateWeight";
 import UpdateTreatmentDate from "./pages/UpdateTreatmentDate";
 import Analytics from "./pages/Analytics";
 
+import Header from "./components/Header";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Footer from "./components/Footer";
 
 function AppLayout() {
   return (
     <div className="app-shell">
+      <Header />
       <Outlet />
       <Footer />
     </div>

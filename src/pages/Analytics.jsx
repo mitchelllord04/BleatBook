@@ -1,4 +1,3 @@
-import Header from "../components/Header";
 import { useState, useEffect, useMemo } from "react";
 import { getAnimals } from "../services/animals";
 import { useAuth } from "../context/useAuth";
@@ -289,7 +288,6 @@ function Analytics() {
   if (loading || pageLoading) {
     return (
       <>
-        <Header />
         <div className="d-flex justify-content-center align-items-center vh-100">
           <div className="text-center">
             <div className="spinner-border" role="status" />
@@ -361,8 +359,6 @@ function Analytics() {
 
   return (
     <>
-      <Header />
-
       <div className="container py-4" style={{ maxWidth: "70rem" }}>
         <div className="mb-4">
           <h1 className="mb-1">Analytics</h1>

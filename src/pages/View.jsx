@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import Header from "../components/Header";
 import { useAuth } from "../context/useAuth";
 import { getAnimals } from "../services/animals";
 import { useNavigate } from "react-router-dom";
@@ -41,7 +40,6 @@ function View() {
   if (loading || pageLoading) {
     return (
       <>
-        <Header />
         <div className="d-flex justify-content-center align-items-center vh-100">
           <div className="text-center">
             <div className="spinner-border" role="status" />
@@ -97,8 +95,6 @@ function View() {
 
   return (
     <>
-      <Header />
-
       <div className="container py-4">
         <h1 className="mb-5">My Animals</h1>
 

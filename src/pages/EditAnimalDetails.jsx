@@ -3,7 +3,6 @@ import { useAuth } from "../context/useAuth";
 import { useEffect, useState } from "react";
 import { getAnimal, updateAnimal } from "../services/animals";
 import { useNavigate } from "react-router-dom";
-import Header from "../components/Header";
 
 function EditAnimalDetails() {
   const { user, loading } = useAuth();
@@ -12,19 +11,29 @@ function EditAnimalDetails() {
   const { animalId } = useParams();
   const navigate = useNavigate();
 
+  const [pageLoading, setPageLoading] = useState(true);
+
   useEffect(() => {
-    async function load() {
+    async function loadAnimal() {
       if (!user) return;
+      const start = Date.now();
       const data = await getAnimal(user.uid, animalId);
+
       setAnimal(data);
+
+      const elapsed = Date.now() - start;
+      const minDelay = 400;
+      const remaining = minDelay - elapsed;
+
+      if (remaining > 0) setTimeout(() => setPageLoading(false), remaining);
+      else setPageLoading(false);
     }
-    load();
+    loadAnimal();
   }, [user, animalId]);
 
-  if (loading) {
+  if (loading || !animal || pageLoading) {
     return (
       <>
-        <Header />
         <div className="d-flex justify-content-center align-items-center vh-100">
           <div className="text-center">
             <div className="spinner-border" role="status" />
@@ -36,7 +45,6 @@ function EditAnimalDetails() {
   }
 
   if (!user) return <h2>Not logged in</h2>;
-  if (!animal) return <h2>Animal not found.</h2>;
 
   async function handleSave() {
     try {
@@ -78,8 +86,6 @@ function EditAnimalDetails() {
 
   return (
     <>
-      <Header />
-
       <div className="container py-4" style={{ maxWidth: "56rem" }}>
         <div className="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
           <div>

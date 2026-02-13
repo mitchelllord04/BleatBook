@@ -1,4 +1,3 @@
-import Header from "../components/Header";
 import { useAuth } from "../context/useAuth";
 import { useEffect, useMemo, useState } from "react";
 import { getAnimals } from "../services/animals";
@@ -166,7 +165,6 @@ function Home() {
   if (loading || pageLoading) {
     return (
       <>
-        <Header />
         <div className="d-flex justify-content-center align-items-center vh-100">
           <div className="text-center">
             <div className="spinner-border" role="status" />
@@ -181,8 +179,6 @@ function Home() {
 
   return (
     <>
-      <Header />
-
       <div className="container py-4" style={{ maxWidth: "70rem" }}>
         <div className="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
           <div>

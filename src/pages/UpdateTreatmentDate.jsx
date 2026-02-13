@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import Header from "../components/Header";
 import { useAuth } from "../context/useAuth";
 import { getAnimal, updateAnimal } from "../services/animals";
 
@@ -29,7 +28,6 @@ function UpdateTreatmentDate() {
   if (loading) {
     return (
       <>
-        <Header />
         <div className="d-flex justify-content-center align-items-center vh-100">
           <div className="text-center">
             <div className="spinner-border" role="status" />
@@ -75,7 +73,6 @@ function UpdateTreatmentDate() {
 
   return (
     <>
-      <Header />
       <div className="container py-4" style={{ maxWidth: "32rem" }}>
         <h1 className="mb-3">Update Treatment Date</h1>
 

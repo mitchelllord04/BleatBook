@@ -3,7 +3,6 @@ import { useAuth } from "../context/useAuth";
 import { getAnimal, deleteAnimal } from "../services/animals";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "../components/Header";
 import WeightChart from "../components/WeightChart";
 import TreatmentHistory from "../components/TreatmentHistory";
 
@@ -13,14 +12,24 @@ function AnimalDetails() {
 
   const [animal, setAnimal] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
 
   const navigate = useNavigate();
 
   useEffect(() => {
     async function loadAnimal() {
       if (!user) return;
+      const start = Date.now();
       const data = await getAnimal(user.uid, animalId);
+
       setAnimal(data);
+
+      const elapsed = Date.now() - start;
+      const minDelay = 600;
+      const remaining = minDelay - elapsed;
+
+      if (remaining > 0) setTimeout(() => setPageLoading(false), remaining);
+      else setPageLoading(false);
     }
     loadAnimal();
   }, [user, animalId]);
@@ -41,10 +50,9 @@ function AnimalDetails() {
     }
   }
 
-  if (loading) {
+  if (loading || !animal || pageLoading) {
     return (
       <>
-        <Header />
         <div className="d-flex justify-content-center align-items-center vh-100">
           <div className="text-center">
             <div className="spinner-border" role="status" />
@@ -54,8 +62,6 @@ function AnimalDetails() {
       </>
     );
   }
-
-  if (!animal) return <h2>Loading animal...</h2>;
 
   const rows = [
     ["Species", animal.species],
@@ -101,8 +107,6 @@ function AnimalDetails() {
 
   return (
     <>
-      <Header />
-
       <div className="container py-4">
         <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
           <div>

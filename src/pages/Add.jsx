@@ -1,12 +1,22 @@
 import { useState } from "react";
 import { addAnimal } from "../services/animals";
 import { useAuth } from "../context/useAuth";
-import Header from "../components/Header";
 
 function Add() {
   const { user, loading } = useAuth();
 
-  if (loading) return <h2>Loading...</h2>;
+  if (loading) {
+    return (
+      <>
+        <div className="d-flex justify-content-center align-items-center vh-100">
+          <div className="text-center">
+            <div className="spinner-border" role="status" />
+            <p className="mt-3 text-body-secondary">Loading…</p>
+          </div>
+        </div>
+      </>
+    );
+  }
   if (!user) return <h2>Not logged in</h2>;
 
   const [form, setForm] = useState({
@@ -83,8 +93,6 @@ function Add() {
 
   return (
     <>
-      <Header />
-
       <div className="container py-4">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h1 className="m-0">Add Animal</h1>
