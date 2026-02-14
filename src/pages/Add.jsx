@@ -117,7 +117,7 @@ function Add() {
                     className="form-control"
                     value={form.name}
                     onChange={setField("name")}
-                    placeholder="e.g. Daisy"
+                    placeholder="e.g. Sally"
                     required
                   />
                 </div>
