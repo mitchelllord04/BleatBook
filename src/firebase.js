@@ -3,12 +3,12 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC0E4umql8KYCaBJTcTQkplkrfUflVEDJw",
-  authDomain: "bleatbook-21433.firebaseapp.com",
-  projectId: "bleatbook-21433",
-  storageBucket: "bleatbook-21433.firebasestorage.app",
-  messagingSenderId: "881295644158",
-  appId: "1:881295644158:web:d3fe14f44d2cf51e7d1caf",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);

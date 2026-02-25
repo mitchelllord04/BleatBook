@@ -112,7 +112,7 @@ function Add() {
 
               <div className="row">
                 <div className="col-md-6 mb-3">
-                  <label className="form-label">Name *</label>
+                  <label className="form-label">Name</label>
                   <input
                     className="form-control"
                     value={form.name}
